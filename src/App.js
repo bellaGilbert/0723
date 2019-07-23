@@ -1,12 +1,8 @@
 import React, { Component } from 'react'
-import PropTypes from "prop-types"
 // 应用根组件
 
 
 class App extends Component {
-    static propTypes= {
-        store:PropTypes.object.isRequired
-    }
     state = {
         count : 0
     }
@@ -44,7 +40,7 @@ class App extends Component {
 
 
     render() {
-        const count = this.props.store.getState()
+        const count = this.state.count
         return (
             <div>
                 <p>click{count} times</p>
