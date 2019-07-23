@@ -7,3 +7,5 @@ ReactDOM.render(<App store={store}/>,document.getElementById("root"))
 store.subscribe(()=>{//从新渲染
  ReactDOM.render(<App store={store}/>,document.getElementById("root"))
 }) 
+// ppppggggg
+// ddsc
