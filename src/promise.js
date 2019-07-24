@@ -1,4 +1,6 @@
 import { __values } from "tslib";
+import { Result } from "antd";
+import { func } from "prop-types";
 
 // 自定义promise
 (function (window){
@@ -24,7 +26,7 @@ import { __values } from "tslib";
         // 回调函数必须是异步
         if(self.callbacks.length>0){
             setTimeout(()=>{//需要使用微队列进行
-             self.callbacks.forEach(callbackobj=>{//因为微观队列太麻烦 简单使用宏观队列
+              self.callbacks.forEach(callbackobj=>{//因为微观队列太麻烦 简单使用宏观队列
                  callbackobj.onResolved(value)//即使回调函数和数据都有了，也需要将回调函数放到回调队列中
              }) 
             },0)
@@ -42,24 +44,95 @@ import { __values } from "tslib";
         // 指定状态为reason
         self.data = reason
         // 可能需要去执行已保存的执行失败的回调函数
-       if(self.callbacks.length > 0){
-          setTimeout(()=>{
-            self.callbacks.forEach(callbackobj=>{
+        if(self.callbacks.length > 0){
+           setTimeout(()=>{
+             self.callbacks.forEach(callbackobj=>{
                 callbackobj.onReject(reason)
             })
           },0)
        }
      }
     //  立即同步执行器函数（去启动异步任务）
-    //？？？？？？？？？？？？？？？？？？？？？
-    try {
-       excutor(resolve,reject) 
-    } catch (error) {
-        reject (error)//一旦执行器执行抛出异常，promise变为失败，且结果为error
+        try {
+           excutor(resolve,reject) 
+              } catch (error) {
+           reject (error)//一旦执行器执行抛出异常，promise变为失败，且结果为error
     }
  }
 //  用来指定成功和失败回调函数的方法
-Promise.prototype.then = function (onResolved,onRejected){
-   const self = this
+    Promise.prototype.then = function (onResolved,onRejected){
+        const self = this   
+        return new Promise((resolve,reject)=>{
+        //调用传入的成功/失败的回调，执行后根据结果来确定返回的promise的结果 
+        function handle(callback){
+        try {
+        const result = callback(self.data)
+            if(result instanceof Promise){
+        //    result.then(
+        //        value=>{
+        //         resolve(value)   
+        //        },
+        //        reason=>{
+        //        reject(reason)    
+        //        }
+        //    )
+            result.then(resolve,reject)   
+            }else{//result 不是promise 直接返回成功
+                resolve(result)
+            }
+        
+            }catch (error) {
+            reject(error)
+            }  
+        } 
+        if(self.status=="resolved"){//已经成功了
+        // 进行成功的异步处理
+        setTimeout(()=>{
+         handle(onResolved)
+        },0)      
+        }else if(self.status==="rejected"){
+        //  进行失败的异步处理
+         setTimeout(()=>{
+             handle(onRejected)
+         },0)
+        }else{//pending 还未确定
+        //向promise中的callbacks中保存两个待执行的回调函数  ?????????????  
+        this.callbacks.push({
+            onResolved:(value)=>{
+        //进行成功处理
+              handle(onResolved) 
+            },
+           onRejected:(reason)=>{
+        //进行失败处理
+              handle(onRejected)
+           } 
+        })
+
+    }
+})
+
+//   1. 用来指定成功和失败回调函数的方法
+//   2. 返回一个新的promise, 这个promise由成功或者失败回调执行的结果来决定
+    Promise.prototype.then=function(onResolved,onRejected){
+       const self = this
+    //指定onResolved与onRejected//??????????????????????????????????
+    onResolved = typeof onResolved === "function" ? onResolved : value =>value;//让promise返回成功 值为 value
+
+    onReject = typeof onRejected === "function" ? onRejected :reason =>{throw reason}  ;//让promise返回失败的值  为 reason
+    return new Promise((resolve,reject)=>{
+       function handle (callback){
+           try {
+              const result = callback(self.data)
+              if(result instanceof Promise){
+                  result.then
+              } 
+           } catch (error) {
+               
+           }
+       }
+    }) 
+    }
 }
 } )
+
+
