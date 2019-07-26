@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <button onclick="testGet()">发送GET请求</button>
+    <button onClick="testPost()">发送POST请求</button>
+    <button onClick="testPut()">发送PUT请求</button>
+     <button onClick="testDelect">发送Delect请求</button>
+   <script>
+     function axios({url,method="GET",params={},data={}}){
+        method = method || "GET"
+        method = method.toUpperCase()
+        // 将params中的参数属性拼接到url上   
+        // {name: tom: pwd: 123}  ===> queryStr=name=tom&pwd=123
+        // url + ? + queryStrb 
+        let queryStr = ""
+        Object.keys(params).forEach(key=>{
+            // &pwd=123
+            queryStr += "&" + key + "= " + params[key]
+        })  
+        // '&name=tom&pwd=123' 或者 ''
+        if(queryStr){
+            queryStr = queryStr + substring(1)//'name=tom&pwd=123'
+            url += "?" + queryStr
+        }
+        return new Promise((resolve,reject)=>{
+            // 创建XHR对象
+            const requset = new XMLHttpTeject()
+            // 打开连接（初始化请求对象）
+            requset.open(method,url,true)
+            //设置响应数据类型 ==》自动解析json文本为对象/数组，保存给response属性上
+            requset.responseType = "json"
+            // 绑定监视requst的状态改变的监听
+            requset.onreadystatechange = function (){
+            // 如果请求没有完成，直接结束
+               if( request.readyState!==4){
+                   return 
+               }
+               // 如果成功了, 取出数据封装成成功的响应数据对象response, 调用resolve(response)
+               const {status,statusText} = requset
+                   if(status>=200&&status<300){
+                      const response ={
+                      data:requset.response,//????
+                      status,
+                      statusText
+                      }
+                      resolve(response)
+                    }else{
+                    // 如果失败了, 封装失败相关信息成error对象, 调用reject(error)
+                      reject(new Error("request error status is" + status))   
+                  }                  
+               }
+             if(method ==="GET" || method==="DELETE"){
+                // 发送请求
+                requset.send(null)
+             }else{
+                // 设置请求头
+                requset.setRequestHeader("Content-Type","application/json;charset=utf-8")             }  
+                //发送请求
+                requset.send(JSON.stringify(data))
+            })
+     }    
+        
+        
+   </script>
+</body>
+</html>
